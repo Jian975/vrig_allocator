@@ -14,6 +14,21 @@ static int8_t free_list = -1;
 //if free list is empty
 static int is_empty = 0;
 
+static int delta(int a, int b) {
+	int difference = a - b;
+	if (difference < 0) {
+		return -difference;
+	}
+	return difference;
+}
+
+static int minimum(int a, int b) {
+	if (a < b) {
+		return a;
+	}
+	return b;
+}
+
 //shift all values to the right of i (excluding i) by 1 to the right
 static void shift_right(int i) {
     for (int j = metadata_size; j > i + 1; j--) {
