@@ -14,21 +14,6 @@ static int8_t free_list = -1;
 //if free list is empty
 static int is_empty = 0;
 
-static int delta(int a, int b) {
-	int difference = a - b;
-	if (difference < 0) {
-		return -difference;
-	}
-	return difference;
-}
-
-static int minimum(int a, int b) {
-	if (a < b) {
-		return a;
-	}
-	return b;
-}
-
 //shift all values to the right of i (excluding i) by 1 to the right
 static void shift_right(int i) {
     for (int j = metadata_size; j > i + 1; j--) {
@@ -48,6 +33,14 @@ static int find(void * address) {
 static void shift_left(int i) {
     for (int j = i + 1; j < metadata_size - 1; j++) {
         metadata[j] = metadata[j + 1];
+    }
+}
+
+void print_memory() {
+    for (int i = 0; i < metadata_size; i++) {
+        ptrdiff_t relative_address = (uintptr_t) metadata[i].address - (uintptr_t) heap;
+        printf("[size=%d, allocated=%d, address=%p]\n", 
+            metadata[i].size, metadata[i].allocated, relative_address);
     }
 }
 
@@ -125,6 +118,7 @@ static void *my_malloc(size_t size) {
     }
 
     metadata[best_fit].allocated = 1;
+    print_memory();
     return metadata[best_fit].address;
 }
 
@@ -163,6 +157,7 @@ static void my_free(void * address) {
         }
     }
     is_empty = 0;
+    print_memory();
 }
 
 static void *my_realloc(void *ptr, size_t size) {
