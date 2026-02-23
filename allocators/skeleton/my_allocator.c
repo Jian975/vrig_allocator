@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #define HEAP_SIZE 100000
-#define METADATA_SIZE 100
+#define METADATA_SIZE 99000
 
 //allocate memory
 static char * heap = NULL;
 static node_t metadata[METADATA_SIZE];
-static int metadata_size = 1;
+static int32_t metadata_size = 1;
 static int8_t free_list = -1;
 //if free list is empty
 static int is_empty = 0;
