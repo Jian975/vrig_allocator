@@ -2,11 +2,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define HEAP_SIZE 102400
+#include <stdint.h>
+#define HEAP_SIZE 502400000
 
 //allocate memory
-static char * heap = NULL;
-static int heap_size = 0;
+static char heap[HEAP_SIZE];
 static node_t * free_list = NULL;
 //if free list is empty
 static int is_empty = 0;
@@ -44,14 +44,8 @@ static node_t * merge(node_t * eater, node_t * eaten) {
  */
 
 static int my_init(void) {
-  heap_size = HEAP_SIZE + (sizeof(node_t) * HEAP_SIZE);
-    if (heap == NULL) {
-        heap = malloc(heap_size);
-    }
-    printf("calculated heap size: %d\n", heap_size);
-    printf("sizeof(node_t) = %d\n", sizeof(node_t));
     node_t * new_free_list = (node_t *) heap;
-    new_free_list -> size = heap_size;
+    new_free_list -> size = SIZE_MAX;
     new_free_list -> next = NULL;
     free_list = new_free_list;
     return 0;
@@ -159,10 +153,17 @@ static void *my_realloc(void *ptr, size_t size) {
   if (address == NULL) {
     return NULL;
   }
+  if (ptr == NULL) {
+	  return address;
+  }
+  if (size == 0) {
+	  my_free(ptr);
+	  return NULL;
+  }
   char * address_start = address;
   node_t * metadata = (node_t * ) ((char *) ptr - sizeof(node_t));
   char * char_ptr = (char *) ptr;
-  for (size_t i = 0; i < minimum(metadata -> size, size); i++) {
+  for (int i = 0; i < minimum(metadata -> size, size); i++) {
     *address = *char_ptr;
     address++;
     char_ptr++;
@@ -172,8 +173,8 @@ static void *my_realloc(void *ptr, size_t size) {
 }
 
 static void *my_calloc(size_t nmemb, size_t size) {
-  char * ptr = my_malloc(nmemb);
-  for (int i = 0; i < size; i++) {
+  char * ptr = my_malloc(nmemb * size);
+  for (size_t i = 0; i < (nmemb * size); i++) {
     *ptr = '\0';
     ptr++;
   }
