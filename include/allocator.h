@@ -90,7 +90,7 @@ typedef struct allocator {
 #endif
 
 typedef struct node {
-    int64_t size;
+    __int128_t size;
     int8_t allocated;
     int8_t next_free;
     void * address;

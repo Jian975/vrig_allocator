@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#define HEAP_SIZE 100000
-#define METADATA_SIZE 99000
+#define HEAP_SIZE 10000000
+#define METADATA_SIZE 9900000
 
 //allocate memory
-static char * heap = NULL;
+static char heap[HEAP_SIZE];
 static node_t metadata[METADATA_SIZE];
 static int32_t metadata_size = 1;
 static int8_t free_list = -1;
@@ -57,6 +57,7 @@ void print_memory() {
         printf("[size=%d, allocated=%d, address=%p]\n", 
             metadata[i].size, metadata[i].allocated, relative_address);
     }
+    printf("\n");
 }
 
 /*
@@ -64,14 +65,13 @@ void print_memory() {
  */
 
 static int my_init(void) {
-    if (heap == NULL) {
-        heap = malloc(HEAP_SIZE);
-    }
     metadata[0].allocated = 0;
     metadata[0].next_free = -1;
     metadata[0].size = HEAP_SIZE;
     metadata[0].address = heap;
     free_list = 0;
+    metadata_size = 1;
+    is_empty = 0;
     return 0;
 }
 
@@ -133,7 +133,6 @@ static void *my_malloc(size_t size) {
     }
 
     metadata[best_fit].allocated = 1;
-    print_memory();
     return metadata[best_fit].address;
 }
 
@@ -172,7 +171,6 @@ static void my_free(void * address) {
         }
     }
     is_empty = 0;
-    print_memory();
 }
 
 static void *my_realloc(void *ptr, size_t size) {
