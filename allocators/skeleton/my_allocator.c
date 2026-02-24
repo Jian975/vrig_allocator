@@ -65,6 +65,7 @@ void print_memory() {
  */
 
 static int my_init(void) {
+    printf("heap address: %p\n", heap);
     metadata[0].allocated = 0;
     metadata[0].next_free = -1;
     metadata[0].size = HEAP_SIZE;
@@ -165,6 +166,9 @@ static void my_free(void * address) {
                     }
                     shift_left(i);
                     metadata_size--;
+		    if (free_list == i + 1) {
+			    free_list = i;
+		    }
                     break;
                 }
             }
