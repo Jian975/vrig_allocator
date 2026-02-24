@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#define HEAP_SIZE 10000000
+#define HEAP_SIZE 1000000000
 #define METADATA_SIZE 9900000
 
 //allocate memory
@@ -32,6 +32,7 @@ static int minimum(int a, int b) {
 //shift all values to the right of i (excluding i) by 1 to the right
 static void shift_right(int i) {
     for (int j = metadata_size; j > i + 1; j--) {
+	metadata[j].next_free += 1;
         metadata[j] = metadata[j - 1];
     }
 }
@@ -47,7 +48,9 @@ static int find(void * address) {
 //shift all values to the right of i (excluding i) by 1
 static void shift_left(int i) {
     for (int j = i + 1; j < metadata_size - 1; j++) {
+	metadata[j].next_free -=1;
         metadata[j] = metadata[j + 1];
+
     }
 }
 
@@ -79,8 +82,11 @@ static int my_init(void) {
 static void my_teardown(void) {}
 
 static void *my_malloc(size_t size) {
-    if (is_empty) {
+    if (is_empty || size == 0) {
         return NULL;
+    }
+    if (size >= 9999) {
+	    print_memory();
     }
     //best fit
     int8_t current = free_list;
@@ -134,6 +140,7 @@ static void *my_malloc(size_t size) {
     }
 
     metadata[best_fit].allocated = 1;
+    metadata[best_fit].size = size;
     return metadata[best_fit].address;
 }
 
@@ -178,36 +185,50 @@ static void my_free(void * address) {
 }
 
 static void *my_realloc(void *ptr, size_t size) {
-  char * address = my_malloc(size);
-  if (address == NULL) {
-    return NULL;
-  }
-  if (ptr == NULL) {
-	  return address;
-  }
   if (size == 0) {
 	  my_free(ptr);
 	  return NULL;
   }
+  int original = find(ptr);
+  printf("old position:%d\n", original);
+  printf("old size: %d\n", metadata[original].size);
+  if (metadata[original].size == size) {
+	  return ptr;
+  }
+  char * address = my_malloc(size);
+  if (ptr == NULL) {
+	  return address;
+  }
+  if (address == NULL) {
+    	return NULL;
+  }
   char * address_start = address;
-  node_t * metadata = (node_t * ) ((char *) ptr - sizeof(node_t));
   char * char_ptr = (char *) ptr;
-  for (int i = 0; i < minimum(metadata -> size, size); i++) {
+  for (int i = 0; i < minimum(metadata[original].size, size); i++) {
     *address = *char_ptr;
     address++;
     char_ptr++;
+  }
+  while (address < address_start + size) {
+	  *address = '\0';
+	  address++;
   }
   my_free(ptr);
   return address_start;
 }
 
 static void *my_calloc(size_t nmemb, size_t size) {
-  char * ptr = my_malloc(nmemb * size);
-  for (size_t i = 0; i < (nmemb * size); i++) {
+  size_t total = nmemb * size;
+  if (total < nmemb || size < size) {
+	  return NULL;//overflow
+  }
+  char * ptr = my_malloc(total);
+  char * ptr_start = ptr;
+  for (size_t i = 0; i < total; i++) {
     *ptr = '\0';
     ptr++;
   }
-  return ptr;
+  return ptr_start;
 }
 
 allocator_t allocator = {.malloc = my_malloc,
