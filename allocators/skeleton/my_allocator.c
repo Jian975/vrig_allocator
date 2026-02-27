@@ -116,8 +116,10 @@ static void my_free(void * address) {
         printf("Error: Can't find address to free\n");
         return;
     }
+    char * char_address = address;
     for (int i = 0; i < metadata[freed].size; i++) {
-	    *(char*) address = NULL;
+	    *char_address = '\0';
+	    char_address++;
     }
     metadata[freed].allocated = 0;
     //if the block after this is free, coalesce
