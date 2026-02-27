@@ -92,7 +92,6 @@ typedef struct allocator {
 typedef struct node {
     __int128_t size;
     int8_t allocated;
-    int8_t next_free;
     void * address;
 } node_t;
 
