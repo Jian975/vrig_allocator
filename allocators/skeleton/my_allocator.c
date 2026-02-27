@@ -62,7 +62,6 @@ void print_memory() {
  */
 
 static int my_init(void) {
-    printf("heap address: %p\n", heap);
     metadata[0].allocated = 0;
     metadata[0].size = HEAP_SIZE;
     metadata[0].address = heap;
@@ -73,6 +72,9 @@ static int my_init(void) {
 static void my_teardown(void) {}
 
 static void * my_malloc(int size) {
+    if (size >= SIZE_MAX - 5000) {
+	    return NULL;
+    }
     //best fit
     int8_t current = 0;
     int smallest_delta = -1;
@@ -139,8 +141,6 @@ static void *my_realloc(void *ptr, size_t size) {
 	  return NULL;
   }
   int original = find(ptr);
-  printf("old position:%d\n", original);
-  printf("old size: %d\n", metadata[original].size);
   if (metadata[original].size == size) {
 	  return ptr;
   }
